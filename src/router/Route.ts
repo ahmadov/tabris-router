@@ -3,9 +3,9 @@ import { Presenter } from '../presenter/Presenter';
 
 export type ContentItem = Page | Action | SearchAction;
 
-export class RouterItem {
+export class Route {
     constructor(
-        public id: string,
+        public name: string,
         public presenter: Presenter,
         public enableDrawer: boolean = false
     ) {}

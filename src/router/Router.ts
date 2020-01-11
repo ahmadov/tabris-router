@@ -1,38 +1,38 @@
 import { NavigationView, contentView, app } from 'tabris';
 import { shared } from 'tabris-decorators';
-import { RouterItem } from './RouterItem';
+import { Route } from './Route';
 import RouterError from './RouterError';
 import { Presenter } from '../presenter/Presenter';
 
 @shared
 export class Router {
     private navigationView: NavigationView = null;
-    private routeItems: Map<string, RouterItem> = new Map();
+    private routes: Map<string, Route> = new Map();
     private history: string[] = [];
     private currentPresenter: Presenter = null;
 
     constructor() {
-        contentView.append(new NavigationView({
-            id: 'routerNavigation',
+        this.navigationView = new NavigationView({
             layoutData: 'stretch'
-        }));
+        });
+        contentView.append(this.navigationView);
     }
 
-    public initialize(items: RouterItem[] = [], defaultRouteId?: string) {
+    public initialize(items: Route[] = [], defaultRouteName?: string) {
         this.initializeItems(items);
-        if (defaultRouteId) {
-            this.go(defaultRouteId);
+        if (defaultRouteName) {
+            this.go(defaultRouteName);
         }
     }
 
-    public append(routeId: string) {
-        this.navigate(routeId);
-        this.history.push(routeId);
+    public append(routeName: string) {
+        this.navigate(routeName);
+        this.history.push(routeName);
     }
 
-    public go(routeId: string) {
-        this.navigate(routeId);
-        this.history = [routeId];
+    public go(routeName: string) {
+        this.navigate(routeName);
+        this.history = [routeName];
     }
 
     public goBack() {
@@ -44,21 +44,20 @@ export class Router {
         }
     }
 
-    private navigate(routeId: string) {
-        if (!this.routeItems.has(routeId)) {
-            throw new RouterError(`Route item '${routeId}' does not exist!`);
+    private navigate(routeName: string) {
+        if (!this.routes.has(routeName)) {
+            throw new RouterError(`Route '${routeName}' does not exist!`);
         }
         this.clearContent();
-        this.setContent(this.routeItems.get(routeId));
+        this.setContent(this.routes.get(routeName));
     }
 
-    private setContent(routeItem: RouterItem) {
-        const navigation = this.getNavigationView();
-        navigation.drawerActionVisible = routeItem.enableDrawer;
-        let components = routeItem.presenter.component();
-        components = Array.isArray(components) ? components : [components];
-        components.forEach(component => navigation.append(component));
-        this.currentPresenter = routeItem.presenter;
+    private setContent(route: Route) {
+        this.navigationView.drawerActionVisible = route.enableDrawer;
+        let contentItems = route.presenter.content();
+        contentItems = Array.isArray(contentItems) ? contentItems : [contentItems];
+        contentItems.forEach(widget => this.navigationView.append(widget));
+        this.currentPresenter = route.presenter;
         if (this.currentPresenter !== null && this.currentPresenter.onAppear) {
             this.currentPresenter.onAppear();
         }
@@ -68,21 +67,15 @@ export class Router {
         if (this.currentPresenter !== null && this.currentPresenter.onDisappear) {
             this.currentPresenter.onDisappear();
         }
-        const navigation = this.getNavigationView();
-        navigation.children().forEach(widget => widget.detach());
+        this.navigationView.children().forEach(widget => widget.detach());
     }
 
-    private getNavigationView() {
-        if (!this.navigationView) {
-            this.navigationView = contentView.find(NavigationView).only();
-            if (!this.navigationView) {
-                throw new Error('No active "NavigationView" could not be found!');
+    private initializeItems(items: Route[] = []) {
+        items.forEach(item => {
+            if (this.routes.has(item.name)) {
+                throw new RouterError(`The name must be unique for each route. Duplicate name: '${item.name}'`);
             }
-        }
-        return this.navigationView;
-    }
-
-    private initializeItems(items: RouterItem[] = []) {
-        items.forEach(item => this.routeItems.set(item.id, item));
+            this.routes.set(item.name, item)
+        });
     }
 }

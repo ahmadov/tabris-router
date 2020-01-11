@@ -1,3 +1,3 @@
 export * from './router/Router';
-export * from './router/RouterItem';
+export * from './router/Route';
 export * from './presenter/Presenter';

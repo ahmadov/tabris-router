@@ -1,4 +1,4 @@
-import { ContentItem } from '../router/RouterItem';
+import { ContentItem } from '../router/Route';
 
 export interface Presenter {
     onAppear?(): void;
@@ -6,5 +6,5 @@ export interface Presenter {
 }
 
 export abstract class Presenter {
-    public abstract component(): ContentItem | ContentItem[];
+    public abstract content(): ContentItem | ContentItem[];
 }
