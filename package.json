@@ -12,13 +12,18 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf ./dist/*",
-    "build": "tsc -p ."
+    "build": "webpack --mode=production && npm run dts",
+    "dts": "dts-generator --name tabris-router --main tabris-router/index --project ./ --out dist/index.d.ts"
   },
   "dependencies": {
     "tabris": "^3.2.0",
     "tabris-decorators": "^3.2.0"
   },
   "devDependencies": {
-    "typescript": "^3.7.0"
+    "dts-generator": "^2.1.0",
+    "typescript": "^3.7.0",
+    "webpack": "^4.0.0",
+    "webpack-cli": "^3.2.3",
+    "ts-loader": "^6.0.4"
   }
 }
