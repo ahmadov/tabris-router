@@ -18,8 +18,8 @@ export class Router {
         contentView.append(this.navigationView);
     }
 
-    public initialize(items: Route[] = [], defaultRouteName?: string) {
-        this.initializeItems(items);
+    public initialize(routes: Route[] = [], defaultRouteName?: string) {
+        this.initializeRoutes(routes);
         if (defaultRouteName) {
             this.go(defaultRouteName);
         }
@@ -48,34 +48,34 @@ export class Router {
         if (!this.routes.has(routeName)) {
             throw new RouterError(`Route '${routeName}' does not exist!`);
         }
-        this.clearContent();
-        this.setContent(this.routes.get(routeName));
+        this.detachPresenter();
+        this.appendPresenter(this.routes.get(routeName));
     }
 
-    private setContent(route: Route) {
+    private appendPresenter(route: Route) {
         this.navigationView.drawerActionVisible = route.enableDrawer;
         let contentItems = route.presenter.content();
         contentItems = Array.isArray(contentItems) ? contentItems : [contentItems];
         contentItems.forEach(widget => this.navigationView.append(widget));
         this.currentPresenter = route.presenter;
-        if (this.currentPresenter !== null && this.currentPresenter.onAppear) {
+        if (this.currentPresenter && this.currentPresenter.onAppear) {
             this.currentPresenter.onAppear();
         }
     }
 
-    private clearContent() {
-        if (this.currentPresenter !== null && this.currentPresenter.onDisappear) {
+    private detachPresenter() {
+        if (this.currentPresenter && this.currentPresenter.onDisappear) {
             this.currentPresenter.onDisappear();
         }
         this.navigationView.children().forEach(widget => widget.detach());
     }
 
-    private initializeItems(items: Route[] = []) {
-        items.forEach(item => {
-            if (this.routes.has(item.name)) {
-                throw new RouterError(`The name must be unique for each route. Duplicate name: '${item.name}'`);
+    private initializeRoutes(routes: Route[] = []) {
+        routes.forEach(route => {
+            if (this.routes.has(route.name)) {
+                throw new RouterError(`The name must be unique for each route. Duplicate name: '${route.name}'`);
             }
-            this.routes.set(item.name, item)
+            this.routes.set(route.name, route)
         });
     }
 }
